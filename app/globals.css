@@ -2,7 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── CSS Variables ──────────────────────────────────────────────────────── */
 :root {
+  /* Dark theme (Operator Dashboard / Voice Ordering) */
   --background: #0a0c12;
   --surface: #13151f;
   --surface-2: #1c1f2e;
@@ -11,6 +13,20 @@
   --gold-light: #e0c08a;
   --text-primary: #f0ede8;
   --text-secondary: #9ca3af;
+
+  /* shadcn-compatible variables (used by UI components on warm pages) */
+  --primary: #1C1917;
+  --primary-foreground: #FDFCF8;
+  --secondary: #F5F5F4;
+  --secondary-foreground: #1C1917;
+  --muted-bg: #F5F5F4;
+  --muted-foreground: #78716C;
+  --accent: #F5F5F4;
+  --accent-foreground: #1C1917;
+  --destructive: #CC0000;
+  --destructive-foreground: #FDFCF8;
+  --border-color: #E7E5E4;
+  --ring: #1C1917;
 }
 
 * {
@@ -55,6 +71,7 @@ body {
   border-radius: 4px;
 }
 
+/* ── Dark Theme Components ──────────────────────────────────────────────── */
 @layer components {
   .card {
     @apply bg-surface rounded-xl border border-white/5;
@@ -99,9 +116,46 @@ body {
   .status-dot {
     @apply w-2 h-2 rounded-full inline-block;
   }
+
+  /* ── Warm Theme Utilities (Guest Portal / Owner Portal / Landing) ──── */
+  .apple-red {
+    @apply bg-[#CC0000] text-white;
+  }
+
+  .apple-red-text {
+    @apply text-[#CC0000];
+  }
+
+  .warm-bg {
+    @apply bg-[#FDFCF8];
+  }
+
+  .glass-light {
+    @apply bg-white/80 backdrop-blur-md border border-white/20;
+  }
+
+  .restaurant-card {
+    @apply bg-white border border-stone-200 shadow-sm rounded-2xl overflow-hidden;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-/* Typing animation for AI indicator */
+/* ── Shadow utility ─────────────────────────────────────────────────────── */
+.shadow-soft {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+/* ── Animations ─────────────────────────────────────────────────────────── */
+
+/* Typing animation for AI indicator (dark pages) */
 .typing-dot {
   animation: typing-bounce 1.4s ease-in-out infinite;
 }
@@ -113,7 +167,7 @@ body {
   30% { transform: translateY(-6px); opacity: 1; }
 }
 
-/* Smooth message entrance */
+/* Smooth message entrance (dark ordering page) */
 .message-enter {
   animation: messageSlideIn 0.25s ease-out forwards;
 }
