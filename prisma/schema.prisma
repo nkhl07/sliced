@@ -1,0 +1,110 @@
+// sliced.ai - Restaurant AI OS
+// Prisma Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model MenuItem {
+  id            Int      @id @default(autoincrement())
+  name          String
+  description   String
+  category      String   // starter | main | side | dessert | drink
+  basePrice     Float
+  marginPercent Float    @default(0.65)
+  isAvailable   Boolean  @default(true)
+  isPerishable  Boolean  @default(false)
+  isHalal       Boolean  @default(false)
+  isKosher      Boolean  @default(false)
+  isVegan       Boolean  @default(false)
+  isVegetarian  Boolean  @default(false)
+  isGlutenFree  Boolean  @default(false)
+  allergens     String   @default("") // comma-separated: nuts, dairy, gluten, shellfish, eggs
+  imageEmoji    String   @default("🍽️")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  inventory     Inventory?
+  orderItems    OrderItem[]
+  aiDecisions   AIDecision[]
+  pricingEvents PricingEvent[]
+}
+
+model Inventory {
+  id           Int      @id @default(autoincrement())
+  menuItemId   Int      @unique
+  currentStock Int      @default(0)
+  maxStock     Int      @default(30)
+  updatedAt    DateTime @updatedAt
+
+  menuItem     MenuItem @relation(fields: [menuItemId], references: [id])
+}
+
+model Order {
+  id         Int         @id @default(autoincrement())
+  sessionId  String      @unique
+  status     String      @default("open")  // open | finalized | paid
+  tableNum   Int?
+  subtotal   Float       @default(0)
+  tax        Float       @default(0)
+  total      Float       @default(0)
+  notes      String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  items       OrderItem[]
+  aiDecisions AIDecision[]
+}
+
+model OrderItem {
+  id           Int      @id @default(autoincrement())
+  orderId      Int
+  menuItemId   Int
+  quantity     Int      @default(1)
+  priceAtOrder Float
+  modifiers    String?
+
+  order    Order    @relation(fields: [orderId], references: [id])
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+}
+
+model AIDecision {
+  id           Int      @id @default(autoincrement())
+  orderId      Int?
+  menuItemId   Int?
+  decisionType String   // promoted | upsell | dynamic_price | out_of_stock_pivot | allergen_flag | basket_analysis
+  reason       String
+  metadata     String?  // JSON: { basePrice, dynamicPrice, stockLevel, demandCount }
+  createdAt    DateTime @default(now())
+
+  order    Order?    @relation(fields: [orderId], references: [id])
+  menuItem MenuItem? @relation(fields: [menuItemId], references: [id])
+}
+
+model PricingEvent {
+  id              Int      @id @default(autoincrement())
+  menuItemId      Int
+  basePrice       Float
+  dynamicPrice    Float
+  priceDelta      Float    // positive = increase, negative = discount
+  reason          String
+  inventoryFactor Float    @default(0)
+  demandFactor    Float    @default(0)
+  timeFactor      Float    @default(0)
+  createdAt       DateTime @default(now())
+
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+}
+
+model ShiftConfig {
+  id         Int      @id @default(autoincrement())
+  shiftStart DateTime
+  shiftEnd   DateTime
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+}
