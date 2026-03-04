@@ -251,7 +251,7 @@ export default function OwnerPortalPage() {
             transition={{ duration: 0.2 }}
           >
             {activeTab === 'dashboard' && <OwnerDashboard menu={menu} orders={orders} />}
-            {activeTab === 'menu' && <MenuUpload menu={menu} onUpdate={setMenu} />}
+            {activeTab === 'menu' && <MenuUpload />}
             {activeTab === 'import' && <MenuImport />}
             {activeTab === 'persona' && ownerData.persona && (
               <PersonaSetup

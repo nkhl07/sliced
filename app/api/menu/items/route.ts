@@ -23,6 +23,16 @@ const BodySchema = z.object({
   items: z.array(ItemSchema).min(1),
 });
 
+export async function GET() {
+  try {
+    const items = await prisma.menuItem.findMany({ orderBy: { id: 'asc' } });
+    return NextResponse.json({ items });
+  } catch (error) {
+    console.error('[menu/items] GET error:', error);
+    return NextResponse.json({ error: 'Failed to fetch menu items' }, { status: 500 });
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
