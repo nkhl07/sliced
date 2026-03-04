@@ -1,7 +1,7 @@
 // app/api/chat/route.ts
 // The core AI endpoint — streams Sage's responses with tool execution
 
-import { streamText } from 'ai';
+import { streamText, convertToModelMessages } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { buildSystemPrompt } from '@/lib/ai/prompts';
 import { createTools } from '@/lib/ai/tools';
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   const result = streamText({
     model: anthropic('claude-sonnet-4-6'),
     system: buildSystemPrompt(),
-    messages,
+    messages: await convertToModelMessages(messages),
     tools: createTools(sessionId),
     maxSteps: 6, // Allow multi-step tool chaining (e.g. search → check inventory → add to order)
     temperature: 0.7,
@@ -27,5 +27,5 @@ export async function POST(req: Request) {
     },
   });
 
-  return result.toDataStreamResponse();
+  return result.toUIMessageStreamResponse();
 }

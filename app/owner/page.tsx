@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Plus,
   ScanLine,
+  User,
 } from 'lucide-react';
 
 import OwnerDashboard from '@/components/Owner/OwnerDashboard';
@@ -37,6 +38,9 @@ export default function OwnerPortalPage() {
   const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [hydrated, setHydrated] = useState(false);
+  const [settingsEditing, setSettingsEditing] = useState(false);
+  const [settingsForm, setSettingsForm] = useState({ restaurantName: '', username: '', email: '', phone: '', tableCount: '' });
+  const [settingsSaved, setSettingsSaved] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('ownerData');
@@ -191,18 +195,29 @@ export default function OwnerPortalPage() {
 
         <nav className="flex-1 space-y-1">
           {TABS.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
-                activeTab === tab.id
-                  ? 'bg-stone-900 text-white shadow-lg shadow-stone-900/20'
-                  : 'text-stone-400 hover:bg-stone-50 hover:text-stone-600'
-              }`}
-            >
-              <tab.icon className="w-5 h-5" />
-              {tab.label}
-            </button>
+            <React.Fragment key={tab.id}>
+              <button
+                onClick={() => setActiveTab(tab.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-stone-900 text-white shadow-lg shadow-stone-900/20'
+                    : 'text-stone-400 hover:bg-stone-50 hover:text-stone-600'
+                }`}
+              >
+                <tab.icon className="w-5 h-5" />
+                {tab.label}
+              </button>
+              {tab.id === 'persona' && (
+                <Link
+                  href="/ordering"
+                  target="_blank"
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-stone-400 hover:bg-stone-50 hover:text-stone-600 transition-all"
+                >
+                  <User className="w-5 h-5" />
+                  Guest View
+                </Link>
+              )}
+            </React.Fragment>
           ))}
         </nav>
 
@@ -250,26 +265,107 @@ export default function OwnerPortalPage() {
             )}
             {activeTab === 'settings' && (
               <div className="space-y-6">
-                <div>
-                  <h2 className="text-3xl font-serif font-black text-stone-900">Settings</h2>
-                  <p className="text-stone-500">Manage your restaurant configuration.</p>
-                </div>
-                <div className="bg-white rounded-[32px] p-8 border border-stone-100 shadow-sm space-y-4">
-                  <h3 className="text-xl font-serif font-bold text-stone-900">Restaurant Info</h3>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Name</p>
-                      <p className="font-bold text-stone-900">{ownerData.restaurantName}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Tables</p>
-                      <p className="font-bold text-stone-900">{ownerData.tableCount}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Username</p>
-                      <p className="font-bold text-stone-900">{ownerData.username}</p>
-                    </div>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h2 className="text-3xl font-serif font-black text-stone-900">Settings</h2>
+                    <p className="text-stone-500">Manage your restaurant configuration.</p>
                   </div>
+                  {!settingsEditing && (
+                    <button
+                      onClick={() => {
+                        setSettingsForm({
+                          restaurantName: ownerData.restaurantName || '',
+                          username: ownerData.username || '',
+                          email: ownerData.email || '',
+                          phone: ownerData.phone || '',
+                          tableCount: String(ownerData.tableCount || ''),
+                        });
+                        setSettingsEditing(true);
+                        setSettingsSaved(false);
+                      }}
+                      className="px-5 py-2.5 bg-stone-900 text-white rounded-xl font-bold text-sm hover:bg-stone-700 transition-colors"
+                    >
+                      Edit
+                    </button>
+                  )}
+                </div>
+
+                <div className="bg-white rounded-[32px] p-8 border border-stone-100 shadow-sm space-y-6">
+                  <h3 className="text-xl font-serif font-bold text-stone-900">Restaurant Info</h3>
+
+                  {settingsEditing ? (
+                    <div className="space-y-4">
+                      {[
+                        { key: 'restaurantName', label: 'Restaurant Name', type: 'text' },
+                        { key: 'username', label: 'Owner Name', type: 'text' },
+                        { key: 'email', label: 'Email', type: 'email' },
+                        { key: 'phone', label: 'Phone Number', type: 'tel' },
+                        { key: 'tableCount', label: 'Number of Tables', type: 'number' },
+                      ].map(({ key, label, type }) => (
+                        <div key={key} className="space-y-1">
+                          <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{label}</label>
+                          <input
+                            type={type}
+                            value={(settingsForm as any)[key]}
+                            onChange={e => setSettingsForm(f => ({ ...f, [key]: e.target.value }))}
+                            className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-stone-900/10 text-sm font-bold text-stone-900"
+                          />
+                        </div>
+                      ))}
+                      <div className="flex gap-3 pt-2">
+                        <button
+                          onClick={() => {
+                            const updated = {
+                              ...ownerData,
+                              restaurantName: settingsForm.restaurantName,
+                              username: settingsForm.username,
+                              email: settingsForm.email,
+                              phone: settingsForm.phone,
+                              tableCount: Number(settingsForm.tableCount) || ownerData.tableCount,
+                            };
+                            setOwnerData(updated);
+                            localStorage.setItem('ownerData', JSON.stringify(updated));
+                            setSettingsEditing(false);
+                            setSettingsSaved(true);
+                          }}
+                          className="px-6 py-3 bg-stone-900 text-white rounded-xl font-bold text-sm hover:bg-stone-700 transition-colors"
+                        >
+                          Save Changes
+                        </button>
+                        <button
+                          onClick={() => setSettingsEditing(false)}
+                          className="px-6 py-3 bg-stone-50 text-stone-600 rounded-xl font-bold text-sm border border-stone-200 hover:bg-stone-100 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-6 text-sm">
+                      {[
+                        { label: 'Restaurant Name', value: ownerData.restaurantName },
+                        { label: 'Tables', value: ownerData.tableCount },
+                        { label: 'Owner Name', value: ownerData.username },
+                        { label: 'Email', value: ownerData.email || '—' },
+                        { label: 'Phone', value: ownerData.phone || '—' },
+                      ].map(({ label, value }) => (
+                        <div key={label}>
+                          <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">{label}</p>
+                          <p className="font-bold text-stone-900">{value}</p>
+                        </div>
+                      ))}
+                      {settingsSaved && (
+                        <div className="col-span-2">
+                          <p className="text-green-600 text-xs font-bold">Settings saved successfully.</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-white rounded-[32px] p-8 border border-stone-100 shadow-sm">
+                  <h3 className="text-xl font-serif font-bold text-stone-900 mb-2">Danger Zone</h3>
+                  <p className="text-stone-400 text-sm mb-4">This will erase all data and return you to onboarding.</p>
                   <button
                     onClick={() => {
                       if (confirm('Are you sure you want to reset all data?')) {
@@ -278,7 +374,7 @@ export default function OwnerPortalPage() {
                         router.push('/onboarding');
                       }
                     }}
-                    className="mt-4 px-6 py-3 bg-red-50 text-red-600 rounded-xl font-bold text-sm border border-red-100 hover:bg-red-100 transition-colors"
+                    className="px-6 py-3 bg-red-50 text-red-600 rounded-xl font-bold text-sm border border-red-100 hover:bg-red-100 transition-colors"
                   >
                     Reset Restaurant Data
                   </button>
