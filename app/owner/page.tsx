@@ -13,16 +13,18 @@ import {
   LogOut,
   ShieldCheck,
   Plus,
+  ScanLine,
 } from 'lucide-react';
 
 import OwnerDashboard from '@/components/Owner/OwnerDashboard';
 import MenuUpload from '@/components/Owner/MenuUpload';
 import PersonaSetup from '@/components/Owner/PersonaSetup';
+import MenuImport from '@/components/Owner/MenuImport';
 import { Button } from '@/components/ui/button';
 import initialMenu from '@/data/menuItems.json';
 import { loadOrdersFromStorage } from '@/utils/guestMemory';
 
-type Tab = 'dashboard' | 'menu' | 'persona' | 'settings';
+type Tab = 'dashboard' | 'menu' | 'persona' | 'settings' | 'import';
 
 export default function OwnerPortalPage() {
   const router = useRouter();
@@ -166,6 +168,7 @@ export default function OwnerPortalPage() {
   const TABS = [
     { id: 'dashboard' as Tab, label: 'Dashboard', icon: LayoutDashboard },
     { id: 'menu' as Tab, label: 'Menu Intelligence', icon: UtensilsCrossed },
+    { id: 'import' as Tab, label: 'Import Menu', icon: ScanLine },
     { id: 'persona' as Tab, label: 'AI Persona', icon: Sparkles },
     { id: 'settings' as Tab, label: 'Settings', icon: Settings },
   ];
@@ -234,6 +237,7 @@ export default function OwnerPortalPage() {
           >
             {activeTab === 'dashboard' && <OwnerDashboard menu={menu} orders={orders} />}
             {activeTab === 'menu' && <MenuUpload menu={menu} onUpdate={setMenu} />}
+            {activeTab === 'import' && <MenuImport />}
             {activeTab === 'persona' && ownerData.persona && (
               <PersonaSetup
                 config={ownerData.persona}
