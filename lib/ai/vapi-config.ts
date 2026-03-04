@@ -2,7 +2,29 @@
 // Vapi assistant configuration — inline config passed to vapi.start()
 // Tools use server-side execution (Vapi POSTs to our /api/vapi/tools webhook)
 
-export function buildVapiAssistantConfig(sessionId: string, appUrl: string) {
+// Matches the tone IDs used in the owner PersonaSetup panel
+export type PersonalityType = 'friendly' | 'professional' | 'casual' | 'witty';
+
+// Voice IDs from https://play.cartesia.ai/voices — replace with any you prefer
+export const VOICE_OPTIONS = [
+  { id: '79a125e8-cd45-4c13-8a67-188112f4dd22', label: 'Sophia', description: 'British Female' },
+  { id: 'a0e99841-438c-4a64-b679-ae501e7d6091', label: 'James',  description: 'American Male'  },
+  { id: 'b7d50908-b17c-442d-ad8d-810c63997ed9', label: 'Luna',   description: 'Casual Female'  },
+] as const;
+
+const PERSONALITY_PROMPTS: Record<PersonalityType, string> = {
+  friendly:     'PERSONALITY: Think of yourself as a trusted friend who knows this menu inside out. Warm, welcoming, and enthusiastic.',
+  professional: 'PERSONALITY: You are refined and elegant, like a Michelin-starred maître d\'. Polished and precise at all times.',
+  casual:       'PERSONALITY: Keep it relaxed and easy-going, like chatting with a local regular who knows all the good stuff.',
+  witty:        'PERSONALITY: Be playful, charming, and clever. Light humour is welcome — make the experience delightful.',
+};
+
+export function buildVapiAssistantConfig(
+  sessionId: string,
+  appUrl: string,
+  voiceId: string = VOICE_OPTIONS[0].id,
+  personality: PersonalityType = 'warm',
+) {
   const toolServerUrl = `${appUrl}/api/vapi/tools`;
 
   // Voice-optimized system prompt — shorter and conversational vs. the text version
@@ -15,14 +37,14 @@ CRITICAL VOICE RULES:
 - When you add something to the order, confirm it clearly: "Perfect, I've added the salmon."
 - When unsure about availability, always check first.
 
-YOUR TOOLS (always use them, never guess):
-- searchMenu: find dishes by category or dietary need
-- checkInventory: verify an item is available before confirming
-- getDynamicPrice: get the actual current price
-- addToOrder: add a confirmed item — only after guest says yes
-- getOrderSummary: read back the current order
-- getRecommendations: suggest pairings
-- finalizeOrder: submit when guest is ready
+YOUR TOOLS (only call when you actually need live data — skip for pure conversation):
+- searchMenu: when guest asks what's available or wants options by category/diet
+- checkInventory: before confirming an item is available
+- getDynamicPrice: when quoting a price
+- addToOrder: when guest explicitly confirms they want an item
+- getOrderSummary: when guest asks what's in their order
+- getRecommendations: when suggesting pairings
+- finalizeOrder: when guest says they're done and ready to order
 
 SESSION ID for all order tools: ${sessionId}
 
@@ -30,7 +52,7 @@ DIETARY: Always ask about restrictions at the start. Remember Halal and allergen
 
 FLOW: Greet → ask about dietary needs → help them find dishes → suggest pairings → confirm and finalize.
 
-PERSONALITY: Think of yourself as a trusted friend who happens to know this menu inside out. Warm, confident, slightly witty.`;
+${PERSONALITY_PROMPTS[personality]}`;
 
   // Tool definitions in OpenAI function-calling format, with server URL for execution
   const tools = [
@@ -160,7 +182,7 @@ PERSONALITY: Think of yourself as a trusted friend who happens to know this menu
     },
     voice: {
       provider: 'cartesia',
-      voiceId: '79a125e8-cd45-4c13-8a67-188112f4dd22', // "British Reading Lady" — warm, articulate
+      voiceId,
     },
     endCallFunctionEnabled: false,
     recordingEnabled: false,
