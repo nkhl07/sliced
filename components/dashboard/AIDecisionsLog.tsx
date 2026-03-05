@@ -29,11 +29,11 @@ export default function AIDecisionsLog({ decisions }: Props) {
   if (decisions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
-        <div className="w-12 h-12 rounded-full bg-surface-2 flex items-center justify-center">
-          <Brain size={20} className="text-text-secondary" />
+        <div className="w-12 h-12 rounded-full bg-stone-100 flex items-center justify-center">
+          <Brain size={20} className="text-stone-400" />
         </div>
-        <p className="text-text-secondary text-sm">No AI decisions logged yet.</p>
-        <p className="text-text-secondary/60 text-xs">Decisions are logged when guests order through Sage.</p>
+        <p className="text-stone-400 text-sm">No AI decisions logged yet.</p>
+        <p className="text-stone-300 text-xs">Decisions are logged when guests order through Sage.</p>
       </div>
     );
   }
@@ -60,7 +60,7 @@ export default function AIDecisionsLog({ decisions }: Props) {
         });
 
         return (
-          <div key={decision.id} className="card p-4 rounded-xl">
+          <div key={decision.id} className="bg-white rounded-2xl border border-stone-100 p-4">
             <div className="flex items-start gap-3">
               <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 border ${config.color}`}>
                 <Icon size={14} />
@@ -68,23 +68,23 @@ export default function AIDecisionsLog({ decisions }: Props) {
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
-                  <span className={`badge border ${config.color} text-xs`}>{config.label}</span>
+                  <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold ${config.color}`}>{config.label}</span>
                   {decision.menuItem && (
-                    <span className="text-text-primary text-sm font-medium">
+                    <span className="text-stone-800 text-sm font-medium">
                       {decision.menuItem.imageEmoji} {decision.menuItem.name}
                     </span>
                   )}
-                  <span className="text-text-secondary/50 text-xs ml-auto">{timeStr}</span>
+                  <span className="text-stone-300 text-xs ml-auto">{timeStr}</span>
                 </div>
 
-                <p className="text-text-secondary text-sm leading-relaxed">{decision.reason}</p>
+                <p className="text-stone-500 text-sm leading-relaxed">{decision.reason}</p>
 
                 {/* Pricing metadata */}
                 {metadata && typeof metadata === 'object' && 'basePrice' in metadata && (
                   <div className="mt-2 flex items-center gap-3 text-xs">
-                    <span className="text-text-secondary/60 line-through">${(metadata.basePrice as number).toFixed(2)}</span>
-                    <span className="text-jade font-medium">${(metadata.dynamicPrice as number).toFixed(2)}</span>
-                    <span className={`font-medium ${Number(metadata.priceDelta ?? (Number(metadata.dynamicPrice) - Number(metadata.basePrice))) < 0 ? 'text-jade' : 'text-crimson'}`}>
+                    <span className="text-stone-300 line-through">${(metadata.basePrice as number).toFixed(2)}</span>
+                    <span className="text-emerald-600 font-medium">${(metadata.dynamicPrice as number).toFixed(2)}</span>
+                    <span className={`font-medium ${Number(metadata.priceDelta ?? (Number(metadata.dynamicPrice) - Number(metadata.basePrice))) < 0 ? 'text-emerald-600' : 'text-red-500'}`}>
                       {Number(metadata.priceDelta ?? (Number(metadata.dynamicPrice) - Number(metadata.basePrice))) < 0 ? '▼' : '▲'}
                       {Math.abs(Number(metadata.percentChange ?? ((Number(metadata.dynamicPrice) - Number(metadata.basePrice)) / Number(metadata.basePrice) * 100))).toFixed(0)}%
                     </span>
@@ -93,7 +93,7 @@ export default function AIDecisionsLog({ decisions }: Props) {
 
                 {/* Session reference */}
                 {decision.order && (
-                  <p className="text-text-secondary/30 text-xs mt-1 font-mono">
+                  <p className="text-stone-200 text-xs mt-1 font-mono">
                     session: {decision.order.sessionId.slice(0, 8)}...
                   </p>
                 )}
