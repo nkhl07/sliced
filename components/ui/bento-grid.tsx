@@ -22,7 +22,8 @@ const BentoCard: React.FC<{
   description: string;
   href: string;
   cta: string;
-}> = ({ name, className, background, Icon, description, href, cta }) => (
+  onClick?: () => void;
+}> = ({ name, className, background, Icon, description, href, cta, onClick }) => (
   <div
     className={cn(
       'group relative col-span-3 flex flex-col justify-between overflow-hidden rounded-[32px]',
@@ -38,7 +39,7 @@ const BentoCard: React.FC<{
     </div>
     <div className="pointer-events-none absolute bottom-0 flex w-full translate-y-10 transform-gpu flex-row items-center p-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
       <Button variant="ghost" asChild size="sm" className="pointer-events-auto text-stone-700 hover:text-[#CC0000]">
-        <a href={href}>
+        <a href={href} onClick={onClick ? (e) => { e.preventDefault(); onClick(); } : undefined}>
           {cta}
           <ArrowRightIcon className="ml-2 h-4 w-4" />
         </a>

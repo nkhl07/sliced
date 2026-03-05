@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   TrendingUp,
@@ -18,11 +18,27 @@ import { BentoGrid, BentoCard } from '@/components/ui/bento-grid';
 interface OwnerDashboardProps {
   menu: any[];
   orders: any[];
+  tableCount?: number;
+  onNavigate?: (tab: string) => void;
 }
 
-export default function OwnerDashboard({ menu, orders }: OwnerDashboardProps) {
+export default function OwnerDashboard({ menu, orders, tableCount, onNavigate }: OwnerDashboardProps) {
   const totalRevenue = orders.reduce((sum, order) => sum + (order.total || 0), 0);
-  const activeTables = new Set(orders.map(o => o.tableId).filter(Boolean)).size;
+  const [tableStatuses, setTableStatuses] = useState<Record<number, string>>({});
+
+  useEffect(() => {
+    function load() {
+      try {
+        const saved = localStorage.getItem('tableStatuses');
+        if (saved) setTableStatuses(JSON.parse(saved));
+      } catch {}
+    }
+    load();
+    window.addEventListener('storage', load);
+    return () => window.removeEventListener('storage', load);
+  }, []);
+
+  const activeTables = Object.values(tableStatuses).filter(s => s !== 'open').length;
   const dynamicPriceAlerts = menu.filter(item => Math.abs(item.dynamic_price - item.base_price) > 0.5);
 
   const bentoFeatures = [
@@ -41,9 +57,10 @@ export default function OwnerDashboard({ menu, orders }: OwnerDashboardProps) {
     },
     {
       name: 'Active Tables',
-      description: `${activeTables} tables currently ordering.`,
+      description: `${activeTables} out of ${tableCount ?? '?'} currently active.`,
       href: '#',
-      cta: 'Manage Tables',
+      cta: 'View QR Codes',
+      onClick: () => onNavigate?.('qr'),
       background: (
         <div className="absolute inset-0 flex items-center justify-center opacity-10">
           <Users className="w-40 h-40 text-blue-600" />
@@ -106,6 +123,7 @@ export default function OwnerDashboard({ menu, orders }: OwnerDashboardProps) {
             background={feature.background}
             Icon={feature.Icon}
             className={feature.className}
+            onClick={(feature as any).onClick}
           />
         ))}
       </BentoGrid>

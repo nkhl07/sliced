@@ -8,7 +8,6 @@ import {
   ChefHat,
   LayoutDashboard,
   UtensilsCrossed,
-
   Settings,
   LogOut,
   ShieldCheck,
@@ -21,28 +20,22 @@ import {
 import OwnerDashboard from '@/components/Owner/OwnerDashboard';
 import MenuUpload from '@/components/Owner/MenuUpload';
 import PersonaSetup from '@/components/Owner/PersonaSetup';
-<<<<<<< HEAD
+import MenuImport from '@/components/Owner/MenuImport';
+import QRGenerator from '@/components/Owner/QRGenerator';
 import MetricsBar from '@/components/dashboard/MetricsBar';
 import AIDecisionsLog from '@/components/dashboard/AIDecisionsLog';
-=======
-import MenuImport from '@/components/Owner/MenuImport';
->>>>>>> fdb50449c085f20b63704460677a978160b6e7b3
 import { Button } from '@/components/ui/button';
 import initialMenu from '@/data/menuItems.json';
 import { loadOrdersFromStorage } from '@/utils/guestMemory';
 
-<<<<<<< HEAD
-type Tab = 'dashboard' | 'menu' | 'sage' | 'settings';
-=======
-type Tab = 'dashboard' | 'menu' | 'persona' | 'settings' | 'import';
->>>>>>> fdb50449c085f20b63704460677a978160b6e7b3
+type Tab = 'dashboard' | 'menu' | 'sage' | 'settings' | 'import' | 'qr';
 
 export default function OwnerPortalPage() {
   const router = useRouter();
   const [ownerData, setOwnerData] = useState<any>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
-  const [menu, setMenu] = useState<any[]>(initialMenu);
+  const [menu] = useState<any[]>(initialMenu);
   const [orders, setOrders] = useState<any[]>([]);
   const [loginUsername, setLoginUsername] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -192,12 +185,8 @@ export default function OwnerPortalPage() {
   const TABS = [
     { id: 'dashboard' as Tab, label: 'Dashboard', icon: LayoutDashboard },
     { id: 'menu' as Tab, label: 'Menu Intelligence', icon: UtensilsCrossed },
-<<<<<<< HEAD
-    { id: 'sage' as Tab, label: 'Sage Intelligence', icon: Brain },
-=======
     { id: 'import' as Tab, label: 'Import Menu', icon: ScanLine },
-    { id: 'persona' as Tab, label: 'AI Persona', icon: Sparkles },
->>>>>>> fdb50449c085f20b63704460677a978160b6e7b3
+    { id: 'sage' as Tab, label: 'Sage Intelligence', icon: Brain },
     { id: 'settings' as Tab, label: 'Settings', icon: Settings },
   ];
 
@@ -267,9 +256,15 @@ export default function OwnerPortalPage() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            {activeTab === 'dashboard' && <OwnerDashboard menu={menu} orders={orders} />}
-<<<<<<< HEAD
-            {activeTab === 'menu' && <MenuUpload menu={menu} onUpdate={setMenu} />}
+            {activeTab === 'dashboard' && <OwnerDashboard menu={menu} orders={orders} tableCount={ownerData.tableCount} onNavigate={tab => setActiveTab(tab as Tab)} />}
+            {activeTab === 'menu' && <MenuUpload />}
+            {activeTab === 'import' && <MenuImport />}
+            {activeTab === 'qr' && (
+              <QRGenerator
+                tableCount={ownerData.tableCount}
+                restaurantName={ownerData.restaurantName}
+              />
+            )}
             {activeTab === 'sage' && (
               <div className="space-y-10">
                 <div>
@@ -286,33 +281,15 @@ export default function OwnerPortalPage() {
                     }}
                   />
                 )}
-                <div className="border-t border-stone-100 pt-10">
-                  {aiLogData ? (
-                    <>
-                      <MetricsBar metrics={aiLogData.metrics} pricingEvents={aiLogData.pricingEvents} />
-                      <div className="mt-8">
-                        <h3 className="text-sm font-bold text-stone-400 uppercase tracking-widest mb-4">Recent Decisions</h3>
-                        <AIDecisionsLog decisions={aiLogData.decisions} />
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex items-center justify-center py-20 text-stone-400 text-sm font-bold">Loading…</div>
-                  )}
-                </div>
+                {aiLogData ? (
+                  <div className="space-y-6">
+                    <MetricsBar metrics={aiLogData.metrics} pricingEvents={aiLogData.pricingEvents} />
+                    <AIDecisionsLog decisions={aiLogData.decisions} />
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center py-20 text-stone-400 text-sm font-bold">Loading…</div>
+                )}
               </div>
-=======
-            {activeTab === 'menu' && <MenuUpload />}
-            {activeTab === 'import' && <MenuImport />}
-            {activeTab === 'persona' && ownerData.persona && (
-              <PersonaSetup
-                config={ownerData.persona}
-                onUpdate={p => {
-                  const updated = { ...ownerData, persona: p };
-                  setOwnerData(updated);
-                  localStorage.setItem('ownerData', JSON.stringify(updated));
-                }}
-              />
->>>>>>> fdb50449c085f20b63704460677a978160b6e7b3
             )}
             {activeTab === 'settings' && (
               <div className="space-y-6">
