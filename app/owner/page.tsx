@@ -8,22 +8,25 @@ import {
   ChefHat,
   LayoutDashboard,
   UtensilsCrossed,
-  Sparkles,
+
   Settings,
   LogOut,
   ShieldCheck,
   Plus,
   User,
+  Brain,
 } from 'lucide-react';
 
 import OwnerDashboard from '@/components/Owner/OwnerDashboard';
 import MenuUpload from '@/components/Owner/MenuUpload';
 import PersonaSetup from '@/components/Owner/PersonaSetup';
+import MetricsBar from '@/components/dashboard/MetricsBar';
+import AIDecisionsLog from '@/components/dashboard/AIDecisionsLog';
 import { Button } from '@/components/ui/button';
 import initialMenu from '@/data/menuItems.json';
 import { loadOrdersFromStorage } from '@/utils/guestMemory';
 
-type Tab = 'dashboard' | 'menu' | 'persona' | 'settings';
+type Tab = 'dashboard' | 'menu' | 'sage' | 'settings';
 
 export default function OwnerPortalPage() {
   const router = useRouter();
@@ -39,6 +42,7 @@ export default function OwnerPortalPage() {
   const [settingsEditing, setSettingsEditing] = useState(false);
   const [settingsForm, setSettingsForm] = useState({ restaurantName: '', username: '', email: '', phone: '', tableCount: '' });
   const [settingsSaved, setSettingsSaved] = useState(false);
+  const [aiLogData, setAiLogData] = useState<{ decisions: any[]; metrics: any; pricingEvents: any[] } | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem('ownerData');
@@ -46,6 +50,15 @@ export default function OwnerPortalPage() {
     setOrders(loadOrdersFromStorage());
     setHydrated(true);
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'sage') {
+      fetch('/api/dashboard')
+        .then(r => r.json())
+        .then(data => setAiLogData({ decisions: data.decisions, metrics: data.metrics, pricingEvents: data.pricingEvents }))
+        .catch(() => {});
+    }
+  }, [activeTab]);
 
   const handleLogin = () => {
     if (!loginUsername.trim() || !loginPassword.trim()) {
@@ -170,14 +183,14 @@ export default function OwnerPortalPage() {
   const TABS = [
     { id: 'dashboard' as Tab, label: 'Dashboard', icon: LayoutDashboard },
     { id: 'menu' as Tab, label: 'Menu Intelligence', icon: UtensilsCrossed },
-    { id: 'persona' as Tab, label: 'AI Persona', icon: Sparkles },
+    { id: 'sage' as Tab, label: 'Sage Intelligence', icon: Brain },
     { id: 'settings' as Tab, label: 'Settings', icon: Settings },
   ];
 
   return (
-    <div className="min-h-screen bg-[#FDFCF8] flex">
+    <div className="h-screen bg-[#FDFCF8] flex overflow-hidden">
       {/* Sidebar */}
-      <div className="w-72 bg-white border-r border-stone-100 p-8 flex flex-col shadow-sm">
+      <div className="w-72 bg-white border-r border-stone-100 p-8 flex flex-col shadow-sm h-screen flex-shrink-0">
         <div className="flex items-center gap-3 mb-12">
           <div className="w-10 h-10 apple-red rounded-xl flex items-center justify-center">
             <ChefHat className="w-6 h-6 text-white" />
@@ -204,7 +217,7 @@ export default function OwnerPortalPage() {
                 <tab.icon className="w-5 h-5" />
                 {tab.label}
               </button>
-              {tab.id === 'persona' && (
+              {tab.id === 'sage' && (
                 <Link
                   href="/ordering"
                   target="_blank"
@@ -220,13 +233,6 @@ export default function OwnerPortalPage() {
 
         {/* Quick links */}
         <div className="pt-4 border-t border-stone-100 space-y-1">
-          <Link
-            href="/dashboard"
-            className="w-full flex items-center gap-3 px-4 py-2 text-stone-400 hover:text-stone-600 font-bold text-xs transition-all"
-          >
-            <LayoutDashboard className="w-4 h-4" />
-            Operator Dashboard (AI)
-          </Link>
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-3 text-stone-400 hover:text-red-500 font-bold text-sm transition-all"
@@ -238,7 +244,7 @@ export default function OwnerPortalPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-10 overflow-y-auto">
+      <div className="flex-1 p-10 overflow-y-auto h-screen">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -249,15 +255,36 @@ export default function OwnerPortalPage() {
           >
             {activeTab === 'dashboard' && <OwnerDashboard menu={menu} orders={orders} />}
             {activeTab === 'menu' && <MenuUpload menu={menu} onUpdate={setMenu} />}
-            {activeTab === 'persona' && ownerData.persona && (
-              <PersonaSetup
-                config={ownerData.persona}
-                onUpdate={p => {
-                  const updated = { ...ownerData, persona: p };
-                  setOwnerData(updated);
-                  localStorage.setItem('ownerData', JSON.stringify(updated));
-                }}
-              />
+            {activeTab === 'sage' && (
+              <div className="space-y-10">
+                <div>
+                  <h2 className="text-3xl font-serif font-black text-stone-900">Sage Intelligence</h2>
+                  <p className="text-stone-500 mt-1">Configure your AI persona and review every decision Sage has made.</p>
+                </div>
+                {ownerData.persona && (
+                  <PersonaSetup
+                    config={ownerData.persona}
+                    onUpdate={p => {
+                      const updated = { ...ownerData, persona: p };
+                      setOwnerData(updated);
+                      localStorage.setItem('ownerData', JSON.stringify(updated));
+                    }}
+                  />
+                )}
+                <div className="border-t border-stone-100 pt-10">
+                  {aiLogData ? (
+                    <>
+                      <MetricsBar metrics={aiLogData.metrics} pricingEvents={aiLogData.pricingEvents} />
+                      <div className="mt-8">
+                        <h3 className="text-sm font-bold text-stone-400 uppercase tracking-widest mb-4">Recent Decisions</h3>
+                        <AIDecisionsLog decisions={aiLogData.decisions} />
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex items-center justify-center py-20 text-stone-400 text-sm font-bold">Loading…</div>
+                  )}
+                </div>
+              </div>
             )}
             {activeTab === 'settings' && (
               <div className="space-y-6">

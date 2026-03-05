@@ -67,12 +67,6 @@ export default function LandingPage() {
           <span className="text-xl font-black tracking-tighter text-stone-900">Sliced.ai</span>
         </div>
         <div className="flex items-center gap-3">
-          <Link
-            href="/dashboard"
-            className="text-stone-500 hover:text-stone-900 text-xs font-bold uppercase tracking-widest transition-colors"
-          >
-            AI Dashboard
-          </Link>
           <button
             onClick={() => router.push('/owner')}
             className="flex items-center gap-2 px-4 py-2 bg-white border border-stone-200 rounded-full text-xs font-bold text-stone-600 hover:border-stone-400 hover:text-stone-900 transition-all shadow-sm"
@@ -196,10 +190,6 @@ export default function LandingPage() {
         >
           <Link href="/ordering" className="hover:text-stone-700 transition-colors font-bold uppercase tracking-widest">
             AI Voice Ordering
-          </Link>
-          <span>·</span>
-          <Link href="/dashboard" className="hover:text-stone-700 transition-colors font-bold uppercase tracking-widest">
-            Operator Dashboard
           </Link>
           <span>·</span>
           <Link href="/owner" className="hover:text-stone-700 transition-colors font-bold uppercase tracking-widest">
