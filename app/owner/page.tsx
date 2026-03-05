@@ -13,6 +13,7 @@ import {
   LogOut,
   ShieldCheck,
   Plus,
+  ScanLine,
   User,
   Brain,
 } from 'lucide-react';
@@ -20,13 +21,21 @@ import {
 import OwnerDashboard from '@/components/Owner/OwnerDashboard';
 import MenuUpload from '@/components/Owner/MenuUpload';
 import PersonaSetup from '@/components/Owner/PersonaSetup';
+<<<<<<< HEAD
 import MetricsBar from '@/components/dashboard/MetricsBar';
 import AIDecisionsLog from '@/components/dashboard/AIDecisionsLog';
+=======
+import MenuImport from '@/components/Owner/MenuImport';
+>>>>>>> fdb50449c085f20b63704460677a978160b6e7b3
 import { Button } from '@/components/ui/button';
 import initialMenu from '@/data/menuItems.json';
 import { loadOrdersFromStorage } from '@/utils/guestMemory';
 
+<<<<<<< HEAD
 type Tab = 'dashboard' | 'menu' | 'sage' | 'settings';
+=======
+type Tab = 'dashboard' | 'menu' | 'persona' | 'settings' | 'import';
+>>>>>>> fdb50449c085f20b63704460677a978160b6e7b3
 
 export default function OwnerPortalPage() {
   const router = useRouter();
@@ -183,7 +192,12 @@ export default function OwnerPortalPage() {
   const TABS = [
     { id: 'dashboard' as Tab, label: 'Dashboard', icon: LayoutDashboard },
     { id: 'menu' as Tab, label: 'Menu Intelligence', icon: UtensilsCrossed },
+<<<<<<< HEAD
     { id: 'sage' as Tab, label: 'Sage Intelligence', icon: Brain },
+=======
+    { id: 'import' as Tab, label: 'Import Menu', icon: ScanLine },
+    { id: 'persona' as Tab, label: 'AI Persona', icon: Sparkles },
+>>>>>>> fdb50449c085f20b63704460677a978160b6e7b3
     { id: 'settings' as Tab, label: 'Settings', icon: Settings },
   ];
 
@@ -254,6 +268,7 @@ export default function OwnerPortalPage() {
             transition={{ duration: 0.2 }}
           >
             {activeTab === 'dashboard' && <OwnerDashboard menu={menu} orders={orders} />}
+<<<<<<< HEAD
             {activeTab === 'menu' && <MenuUpload menu={menu} onUpdate={setMenu} />}
             {activeTab === 'sage' && (
               <div className="space-y-10">
@@ -285,6 +300,19 @@ export default function OwnerPortalPage() {
                   )}
                 </div>
               </div>
+=======
+            {activeTab === 'menu' && <MenuUpload />}
+            {activeTab === 'import' && <MenuImport />}
+            {activeTab === 'persona' && ownerData.persona && (
+              <PersonaSetup
+                config={ownerData.persona}
+                onUpdate={p => {
+                  const updated = { ...ownerData, persona: p };
+                  setOwnerData(updated);
+                  localStorage.setItem('ownerData', JSON.stringify(updated));
+                }}
+              />
+>>>>>>> fdb50449c085f20b63704460677a978160b6e7b3
             )}
             {activeTab === 'settings' && (
               <div className="space-y-6">

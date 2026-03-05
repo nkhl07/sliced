@@ -1,11 +1,15 @@
 'use client';
 
 import React from 'react';
-import { Sparkles, Zap, ShieldCheck, MessageSquare, Volume2 } from 'lucide-react';
+import { Sparkles, Zap, ShieldCheck, MessageSquare, Volume2, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { VOICE_OPTIONS } from '@/lib/ai/vapi-config';
+
+export const PERSONA_STORAGE_KEY = 'sage-persona';
 
 interface PersonaConfig {
   tone: string;
+  voiceId?: string;
   upsellStyle?: string;
 }
 
@@ -29,6 +33,14 @@ const PREVIEW_MESSAGES: Record<string, string> = {
 };
 
 export default function PersonaSetup({ config, onUpdate }: PersonaSetupProps) {
+  const handleSave = () => {
+    localStorage.setItem(PERSONA_STORAGE_KEY, JSON.stringify({
+      tone: config.tone,
+      voiceId: config.voiceId ?? VOICE_OPTIONS[0].id,
+    }));
+    alert('Persona saved!');
+  };
+
   return (
     <div className="space-y-8">
       <div>
@@ -36,7 +48,31 @@ export default function PersonaSetup({ config, onUpdate }: PersonaSetupProps) {
         <p className="text-stone-500">Customize how your digital server interacts with guests.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Voice Character */}
+        <div className="bg-white rounded-[32px] p-8 border border-stone-100 shadow-sm space-y-6">
+          <div className="flex items-center gap-3 mb-2">
+            <Mic className="w-5 h-5 text-stone-900" />
+            <h3 className="text-xl font-serif font-bold text-stone-900">Voice Character</h3>
+          </div>
+          <div className="grid grid-cols-1 gap-3">
+            {VOICE_OPTIONS.map(voice => (
+              <button
+                key={voice.id}
+                onClick={() => onUpdate({ ...config, voiceId: voice.id })}
+                className={`p-6 rounded-2xl border-2 transition-all text-left ${
+                  (config.voiceId ?? VOICE_OPTIONS[0].id) === voice.id
+                    ? 'border-stone-900 bg-stone-50'
+                    : 'border-stone-100 hover:border-stone-200'
+                }`}
+              >
+                <p className="font-bold text-sm text-stone-900">{voice.label}</p>
+                <p className="text-xs text-stone-500">{voice.description}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Tone Selection */}
         <div className="bg-white rounded-[32px] p-8 border border-stone-100 shadow-sm space-y-6">
           <div className="flex items-center gap-3 mb-2">
@@ -89,10 +125,7 @@ export default function PersonaSetup({ config, onUpdate }: PersonaSetupProps) {
           <Button
             variant="outline"
             className="w-full bg-transparent border-white/20 text-white hover:bg-white/10"
-            onClick={() => {
-              // In a real app, this would persist to the database
-              alert('Persona saved!');
-            }}
+            onClick={handleSave}
           >
             Save Persona Configuration
           </Button>

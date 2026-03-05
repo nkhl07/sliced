@@ -7,7 +7,9 @@ import { useChat } from '@ai-sdk/react';
 import { v4 as uuidv4 } from 'uuid';
 import OrderSidebar from './OrderSidebar';
 import Vapi from '@vapi-ai/web';
-import { buildVapiAssistantConfig } from '@/lib/ai/vapi-config';
+import { buildVapiAssistantConfig, VOICE_OPTIONS, PersonalityType } from '@/lib/ai/vapi-config';
+// VOICE_OPTIONS used for default voiceId fallback
+import { PERSONA_STORAGE_KEY } from '@/components/Owner/PersonaSetup';
 
 type CallStatus = 'idle' | 'connecting' | 'active' | 'ending';
 type SageStatus = 'idle' | 'listening' | 'thinking' | 'speaking';
@@ -36,6 +38,20 @@ export default function VoiceInterface() {
   useEffect(() => { setSessionId(uuidv4()); }, []);
   const [inputMode, setInputMode] = useState<InputMode>('voice');
 
+  // Voice settings — configured by restaurant in owner portal, not by guest
+  const [voiceId, setVoiceId] = useState<string>(VOICE_OPTIONS[0].id);
+  const [personality, setPersonality] = useState<PersonalityType>('friendly');
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(PERSONA_STORAGE_KEY);
+      if (saved) {
+        const { voiceId: v, tone } = JSON.parse(saved);
+        if (v) setVoiceId(v);
+        if (tone) setPersonality(tone as PersonalityType);
+      }
+    } catch {}
+  }, []);
+
   // Voice state
   const [callStatus, setCallStatus] = useState<CallStatus>('idle');
   const [sageStatus, setSageStatus] = useState<SageStatus>('idle');
@@ -56,6 +72,9 @@ export default function VoiceInterface() {
   const transcriptEndRef = useRef<HTMLDivElement>(null);
   const textInputRef = useRef<HTMLTextAreaElement>(null);
   const greetingTriggeredRef = useRef(false);
+  const lastAssistantTextRef = useRef('');
+  const lastCommittedAssistantTextRef = useRef('');
+  const userTranscriptRef = useRef('');
 
   useEffect(() => {
     transcriptEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -76,10 +95,26 @@ export default function VoiceInterface() {
   }, [inputMode]);
 
   const setupVapiListeners = useCallback((vapi: Vapi) => {
-    vapi.on('call-start', () => { setCallStatus('active'); setSageStatus('speaking'); setVoiceError(null); });
+    vapi.on('call-start', () => { setCallStatus('active'); setSageStatus('speaking'); setVoiceError(null); lastAssistantTextRef.current = ''; lastCommittedAssistantTextRef.current = ''; });
     vapi.on('call-end', () => { setCallStatus('idle'); setSageStatus('idle'); setVolumeLevel(0); });
-    vapi.on('speech-start', () => setSageStatus('speaking'));
-    vapi.on('speech-end', () => setSageStatus('listening'));
+    vapi.on('speech-start', () => {
+      setSageStatus('speaking');
+      userTranscriptRef.current = '';
+      setTranscript(prev => prev.map(e =>
+        e.id === 'user-current' ? { ...e, id: uuidv4(), isFinal: true } : e
+      ));
+    });
+    vapi.on('speech-end', () => {
+      setSageStatus('listening');
+      const full = lastAssistantTextRef.current;
+      setTranscript(prev => prev.map(e =>
+        e.id === 'assistant-speaking' ? { ...e, id: uuidv4(), isFinal: true } : e
+      ));
+      if (full) {
+        lastCommittedAssistantTextRef.current = full;
+        lastAssistantTextRef.current = '';
+      }
+    });
     vapi.on('volume-level', (level: number) => setVolumeLevel(Math.min(level * 100, 100)));
 
     vapi.on('message', (message: Record<string, unknown>) => {
@@ -88,36 +123,47 @@ export default function VoiceInterface() {
       if (type === 'transcript') {
         const role = message.role as string;
         const text = (message.transcript ?? message.message ?? '') as string;
-        const isFinal = (message.transcriptType === 'final' || message.isFinal === true);
+        const isFinal = message.transcriptType === 'final' || message.isFinal === true;
 
-        if (role === 'user') {
+        if (role === 'user' && text.trim()) {
           setSageStatus('thinking');
-          if (isFinal && text.trim()) {
-            setTranscript(prev => {
-              const withoutPartial = prev.filter(e => !(e.role === 'user' && !e.isFinal));
-              return [...withoutPartial, { id: uuidv4(), role: 'user', text: text.trim(), isFinal: true }];
-            });
-          } else if (!isFinal && text.trim()) {
-            setTranscript(prev => {
-              const withoutPartial = prev.filter(e => !(e.role === 'user' && !e.isFinal));
-              return [...withoutPartial, { id: 'user-partial', role: 'user', text: text.trim(), isFinal: false }];
-            });
+          lastCommittedAssistantTextRef.current = '';
+          if (isFinal) {
+            userTranscriptRef.current = (userTranscriptRef.current + ' ' + text.trim()).trim();
+          }
+          const display = isFinal
+            ? userTranscriptRef.current
+            : (userTranscriptRef.current + ' ' + text.trim()).trim();
+          setTranscript(prev => {
+            const without = prev.filter(e => e.id !== 'user-current');
+            return [...without, { id: 'user-current', role: 'user', text: display, isFinal: false }];
+          });
+        }
+      }
+
+      if (type === 'conversation-update') {
+        setOrderVersion(v => v + 1);
+        const conversation = message.conversation as Array<{ role: string; content: unknown }> | undefined;
+        if (conversation?.length) {
+          const lastMsg = conversation[conversation.length - 1];
+          if (lastMsg.role === 'assistant') {
+            const c = lastMsg.content;
+            const full = typeof c === 'string'
+              ? c
+              : Array.isArray(c) ? (c as any[]).map(x => x.text ?? '').join('') : '';
+            lastAssistantTextRef.current = full;
+            const newText = lastCommittedAssistantTextRef.current
+              ? full.slice(lastCommittedAssistantTextRef.current.length).trim()
+              : full.trim();
+            if (newText) {
+              setTranscript(prev => {
+                const without = prev.filter(e => e.id !== 'assistant-speaking');
+                return [...without, { id: 'assistant-speaking', role: 'assistant', text: newText, isFinal: false }];
+              });
+            }
           }
         }
       }
-
-      if (type === 'model-output' || (type === 'transcript' && message.role === 'assistant')) {
-        const text = (message.output ?? message.transcript ?? message.message ?? '') as string;
-        if (text.trim()) {
-          setTranscript(prev => {
-            const withoutPartial = prev.filter(e => !(e.role === 'assistant' && !e.isFinal));
-            return [...withoutPartial, { id: uuidv4(), role: 'assistant', text: text.trim(), isFinal: true }];
-          });
-          setOrderVersion(v => v + 1);
-        }
-      }
-
-      if (type === 'conversation-update') setOrderVersion(v => v + 1);
     });
 
     vapi.on('error', (err: unknown) => {
@@ -136,8 +182,9 @@ export default function VoiceInterface() {
     setTranscript([]);
     try {
       const vapi = getVapi();
+      vapi.removeAllListeners();
       setupVapiListeners(vapi);
-      const config = buildVapiAssistantConfig(sessionId, appUrl);
+      const config = buildVapiAssistantConfig(sessionId, appUrl, voiceId, personality);
       await vapi.start(config as Parameters<typeof vapi.start>[0]);
     } catch (err) {
       setVoiceError(err instanceof Error ? err.message : 'Failed to connect. Check your Vapi key.');
@@ -433,7 +480,7 @@ export default function VoiceInterface() {
               </motion.div>
 
             ) : (
-              /* Idle voice mode — large mic + small keyboard */
+              /* Idle voice mode */
               <motion.div key="idle" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="flex items-center gap-3">
                 <button
                   onClick={startCall}
