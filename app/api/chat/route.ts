@@ -20,7 +20,6 @@ export async function POST(req: Request) {
     system: buildSystemPrompt(),
     messages: await convertToModelMessages(messages),
     tools: createTools(sessionId),
-    maxSteps: 6, // Allow multi-step tool chaining (e.g. search → check inventory → add to order)
     temperature: 0.7,
     onError: ({ error }) => {
       console.error('[chat/route] streamText error:', error);
