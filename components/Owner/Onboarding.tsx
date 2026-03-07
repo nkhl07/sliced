@@ -68,7 +68,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
               <input
                 type="text"
                 placeholder="Username"
-                className="w-full pl-10 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
                 value={formData.username}
                 onChange={e => setFormData({ ...formData, username: e.target.value })}
               />
@@ -78,7 +78,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
               <input
                 type="password"
                 placeholder="Password (min 6 characters)"
-                className="w-full pl-10 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
                 value={formData.password}
                 onChange={e => setFormData({ ...formData, password: e.target.value })}
               />
@@ -102,7 +102,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                 <input
                   type="tel"
                   placeholder="+1 (555) 000-0000"
-                  className="w-full pl-12 pr-4 py-4 bg-stone-50 border border-stone-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                  className="w-full pl-12 pr-4 py-4 bg-stone-50 border border-stone-200 rounded-2xl text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
                 />
@@ -179,7 +179,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
             <input
               type="text"
               placeholder="e.g. The Golden Fork"
-              className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all"
+              className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all"
               value={formData.restaurantName}
               onChange={e => setFormData({ ...formData, restaurantName: e.target.value })}
             />
