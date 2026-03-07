@@ -55,7 +55,7 @@ export default function OrderSidebar({ sessionId, version }: Props) {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3, delay: 0.15 }}
-      className="w-80 flex-shrink-0 border-l border-stone-100 bg-white flex flex-col shadow-sm"
+      className="w-80 flex-shrink-0 border-l border-stone-100 bg-white flex flex-col shadow-sm h-full"
     >
       {/* Header */}
       <div className="px-6 py-5 border-b border-stone-100 flex items-center justify-between">
