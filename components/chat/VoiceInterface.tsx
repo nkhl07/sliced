@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Mic, MicOff, PhoneOff, ChefHat, AlertTriangle, Wifi, Keyboard, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useChat, DefaultChatTransport } from '@ai-sdk/react';
+import { useChat } from '@ai-sdk/react';
 import { v4 as uuidv4 } from 'uuid';
 import OrderSidebar from './OrderSidebar';
 import Vapi from '@vapi-ai/web';
@@ -62,7 +62,6 @@ export default function VoiceInterface() {
   // Text state
   const [inputText, setInputText] = useState('');
   const { messages: chatMessages, sendMessage, status: chatStatus } = useChat({
-    transport: new DefaultChatTransport({ url: '/api/chat' }),
     onFinish: () => setOrderVersion(v => v + 1),
   });
   const isChatLoading = chatStatus === 'submitted' || chatStatus === 'streaming';
