@@ -23,7 +23,7 @@ export function buildVapiAssistantConfig(
   sessionId: string,
   appUrl: string,
   voiceId: string = VOICE_OPTIONS[0].id,
-  personality: PersonalityType = 'warm',
+  personality: PersonalityType = 'friendly',
 ) {
   const toolServerUrl = `${appUrl}/api/vapi/tools`;
 

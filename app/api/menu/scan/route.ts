@@ -44,8 +44,6 @@ export async function POST(req: Request) {
     }
 
     const bytes = await file.arrayBuffer();
-    const base64 = Buffer.from(bytes).toString('base64');
-    const mimeType = file.type as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
 
     const { object } = await generateObject({
       model: anthropic('claude-sonnet-4-6'),
@@ -53,7 +51,7 @@ export async function POST(req: Request) {
       messages: [{
         role: 'user',
         content: [
-          { type: 'image', image: base64, mimeType },
+          { type: 'image', image: new Uint8Array(bytes) },
           { type: 'text', text: SCAN_PROMPT },
         ],
       }],
