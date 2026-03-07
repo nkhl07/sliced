@@ -183,7 +183,7 @@ export default function VoiceInterface() {
       vapi.removeAllListeners();
       setupVapiListeners(vapi);
       const config = buildVapiAssistantConfig(sessionId, appUrl, voiceId, personality);
-      await vapi.start(config as Parameters<typeof vapi.start>[0]);
+      await vapi.start(config as unknown as Parameters<typeof vapi.start>[0]);
     } catch (err) {
       setVoiceError(err instanceof Error ? err.message : 'Failed to connect. Check your Vapi key.');
       setCallStatus('idle');
