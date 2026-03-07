@@ -228,7 +228,7 @@ export default function VoiceInterface() {
   const isEmpty = visibleMessages.length === 0 && !isActive && !isConnecting;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#FDFCF8]">
+    <div className="flex h-[100dvh] overflow-hidden bg-[#FDFCF8]">
       <div className="flex flex-col flex-1 min-w-0">
 
         {/* Header */}
