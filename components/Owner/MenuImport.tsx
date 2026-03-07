@@ -251,7 +251,7 @@ export default function MenuImport() {
 
     // If toggling availability, save immediately
     if (field === 'isAvailable') {
-      saveItem(id, { [field]: value });
+      saveItem(id, { [field]: value as boolean });
     }
   };
 
